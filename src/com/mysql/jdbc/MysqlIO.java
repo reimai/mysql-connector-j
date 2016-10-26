@@ -226,7 +226,9 @@ public class MysqlIO {
     private int serverMajorVersion = 0;
     private int serverMinorVersion = 0;
     private int oldServerStatus = 0;
-    private int serverStatus = 0;
+    //guarded by connection's mutex, see Connection#getConnectionMutex()
+    private volatile int serverStatus = 0;
+
     private int serverSubMinorVersion = 0;
     private int warningCount = 0;
     protected long clientParam = 0;
@@ -777,7 +779,7 @@ public class MysqlIO {
 
     protected boolean isSetNeededForAutoCommitMode(boolean autoCommitFlag) {
         if (this.use41Extensions && this.connection.getElideSetAutoCommits()) {
-            boolean autoCommitModeOnServer = ((this.serverStatus & SERVER_STATUS_AUTOCOMMIT) != 0);
+            boolean autoCommitModeOnServer = (this.serverStatus & SERVER_STATUS_AUTOCOMMIT) != 0;
 
             if (!autoCommitFlag && versionMeetsMinimum(5, 0, 0)) {
                 // Just to be safe, check if a transaction is in progress on the server....

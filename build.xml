@@ -918,7 +918,7 @@ Java 8 (for JDBC 4+ implementation) is also required. Set the full path to this 
     <target name="compile-testsuite"
             description="Compiles driver including JDBC 3 and JDBC 4+ implementations and JUnit test suite."
             depends="init, compile-driver">
-        <echo>Compiling MySQL Connector/J testsuite with '${com.mysql.jdbc.jdk5}' to '${compiler.output}'</echo>
+        <echo>Compiling MySQL Connector/J testsuite with '${com.mysql.jdbc.jdk8}' to '${compiler.output}'</echo>
 
         <javac sourcepath=""
                srcdir="${buildDir}/${fullProdName}"
@@ -926,11 +926,12 @@ Java 8 (for JDBC 4+ implementation) is also required. Set the full path to this 
                deprecation="off"
                debug="${debug.enable}"
                fork="yes"
-               executable="${com.mysql.jdbc.jdk5.javac}"
+               executable="${com.mysql.jdbc.jdk8.javac}"
                compiler="modern"
                includeantruntime="false"
-               source="1.5"
-               target="1.5">
+les
+               source="1.8"
+               target="1.8">
             <include name="testsuite/**" />
             <exclude name="testsuite/requiresNonRedists/**" />
             <exclude name="testsuite/**/jdbc4*/**" />

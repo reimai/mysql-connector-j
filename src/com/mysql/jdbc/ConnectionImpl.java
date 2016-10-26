@@ -3470,47 +3470,41 @@ public class ConnectionImpl extends ConnectionPropertiesImpl implements MySQLCon
         boolean overrideDefaultAutocommit = false;
 
         String initConnectValue = this.serverVariables.get("init_connect");
+        boolean initConnectDisablesAutocommit = initConnectValue != null
+                && initConnectValue.toLowerCase().matches(".*\\s+autocommit\\s*=\\s*0\\s*($|;.*)");
 
-        if (versionMeetsMinimum(4, 1, 2) && initConnectValue != null && initConnectValue.length() > 0) {
-            if (!getElideSetAutoCommits()) {
-                // auto-commit might have changed
-                java.sql.ResultSet rs = null;
-                java.sql.Statement stmt = null;
+        if (versionMeetsMinimum(4, 1, 2) && initConnectValue != null && initConnectDisablesAutocommit) {
+            // auto-commit might have changed
+            java.sql.ResultSet rs = null;
+            java.sql.Statement stmt = null;
 
-                try {
-                    stmt = getMetadataSafeStatement();
+            try {
+                stmt = getMetadataSafeStatement();
 
-                    rs = stmt.executeQuery("SELECT @@session.autocommit");
+                rs = stmt.executeQuery("SELECT @@session.autocommit");
 
-                    if (rs.next()) {
-                        this.autoCommit = rs.getBoolean(1);
-                        if (this.autoCommit != true) {
-                            overrideDefaultAutocommit = true;
-                        }
-                    }
-
-                } finally {
-                    if (rs != null) {
-                        try {
-                            rs.close();
-                        } catch (SQLException sqlEx) {
-                            // do nothing
-                        }
-                    }
-
-                    if (stmt != null) {
-                        try {
-                            stmt.close();
-                        } catch (SQLException sqlEx) {
-                            // do nothing
-                        }
+                if (rs.next()) {
+                    this.autoCommit = rs.getBoolean(1);
+                    if (this.autoCommit != true) {
+                        overrideDefaultAutocommit = true;
                     }
                 }
-            } else {
-                if (this.getIO().isSetNeededForAutoCommitMode(true)) {
-                    // we're not in standard autocommit=true mode
-                    this.autoCommit = false;
-                    overrideDefaultAutocommit = true;
+
+            } finally {
+                if (rs != null) {
+                    try {
+                        rs.close();
+                    } catch (SQLException sqlEx) {
+                        // do nothing
+                    }
+                }
+
+                if (stmt != null) {
+                    try {
+                        stmt.close();
+                    } catch (SQLException sqlEx) {
+                        // do nothing
+                    }
                 }
             }
         }
